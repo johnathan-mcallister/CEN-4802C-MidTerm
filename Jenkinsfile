@@ -4,31 +4,46 @@ pipeline {
   environment {
     IMAGE_NAME = "cen4802c-midterm"
     CONTAINER_NAME = "cen4802c-midterm-app"
-    APP_PORT = "8080" // change if your app uses a different port
+    APP_PORT = "3000"   // change if your app uses a different port
   }
 
   stages {
     stage('Checkout') {
+      steps { checkout scm }
+    }
+
+    stage('Node + NPM Versions') {
       steps {
-        checkout scm
+        bat 'node -v'
+        bat 'npm -v'
       }
     }
 
-    stage('Build + Test (Maven/JUnit)') {
+    stage('Install Dependencies') {
       steps {
-        bat 'mvn -B clean test package'
+        // Uses package-lock.json for reproducible installs
+        bat 'npm ci'
       }
-      post {
-        always {
-          junit 'target/surefire-reports/*.xml'
-        }
+    }
+
+    stage('Test') {
+      steps {
+        // Only runs if you have a test script; otherwise it will fail.
+        // If you don't have tests yet, see the "Allow no tests" option below.
+        bat 'npm test'
+      }
+    }
+
+    stage('Build (optional)') {
+      steps {
+        // Only if you have a build step (React/TS/etc). If not, you can remove this stage.
+        bat 'npm run build'
       }
     }
 
     stage('Docker Build (WSL)') {
       steps {
         bat 'wsl docker build -t %IMAGE_NAME%:%BUILD_NUMBER% .'
-        bat 'wsl docker image ls %IMAGE_NAME% --format "{{.Repository}}:{{.Tag}}"'
       }
     }
 
