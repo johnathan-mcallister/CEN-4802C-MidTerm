@@ -26,12 +26,13 @@ pipeline {
       }
     }
 
-    stage('Test') {
-      steps {
-        // Only runs if you have a test script; otherwise it will fail.
-        // If you don't have tests yet, see the "Allow no tests" option below.
-        bat 'npm test'
-      }
+    stage('Test (if configured)') {
+        steps {
+            bat '''
+            node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts.test ? 0 : 1)" || (echo No test script found, skipping tests & exit /b 0)
+            npm test
+            '''
+        }
     }
 
     stage('Build (optional)') {
