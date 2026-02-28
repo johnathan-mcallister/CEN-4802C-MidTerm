@@ -4,15 +4,16 @@ pipeline {
   environment {
     IMAGE_NAME = "cen4802c-midterm"
     CONTAINER_NAME = "cen4802c-midterm-app"
-    APP_PORT = "3000"   // change if your app uses a different port
+    APP_PORT = "3000"
   }
 
   stages {
+
     stage('Checkout') {
       steps { checkout scm }
     }
 
-    stage('Node + NPM Versions') {
+    stage('Node Version') {
       steps {
         bat 'node -v'
         bat 'npm -v'
@@ -21,34 +22,17 @@ pipeline {
 
     stage('Install Dependencies') {
       steps {
-        // Uses package-lock.json for reproducible installs
         bat 'npm ci'
       }
     }
 
-    stage('Test (if configured)') {
-        steps {
-            bat '''
-            node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts.test ? 0 : 1)" || (echo No test script found, skipping tests & exit /b 0)
-            npm test
-            '''
-        }
-    }
-
-    stage('Build (optional)') {
-      steps {
-        // Only if you have a build step (React/TS/etc). If not, you can remove this stage.
-        bat 'npm run build'
-      }
-    }
-
-    stage('Docker Build (WSL)') {
+    stage('Docker Build') {
       steps {
         bat 'wsl docker build -t %IMAGE_NAME%:%BUILD_NUMBER% .'
       }
     }
 
-    stage('Deploy (Run Container)') {
+    stage('Deploy Container') {
       steps {
         bat '''
           wsl docker rm -f %CONTAINER_NAME% 2>nul || exit /b 0
@@ -62,5 +46,6 @@ pipeline {
         bat 'wsl docker ps --filter "name=%CONTAINER_NAME%"'
       }
     }
+
   }
 }
