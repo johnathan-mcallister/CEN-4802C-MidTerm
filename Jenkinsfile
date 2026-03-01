@@ -26,6 +26,12 @@ pipeline {
       }
     }
 
+    stage('Test') {
+      steps {
+        bat 'set NODE_ENV=test && set SQLITE_DB_LOCATION=%WORKSPACE%\\todo_test.db && npm run test:ci --silent'
+      }
+    }
+
     stage('Docker Build') {
       steps {
         bat 'wsl docker build -t %IMAGE_NAME%:%BUILD_NUMBER% .'

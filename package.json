@@ -4,7 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon -L src/index.js"
+    "dev": "nodemon -L src/index.js",
+    "test": "jest --runInBand",
+    "test:ci": "jest --runInBand --testPathIgnorePatterns=spec/persistence"
   },
   "dependencies": {
     "express": "^5.2.1",
@@ -14,7 +16,8 @@
     "wait-port": "^1.1.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "jest": "^29.6.1"
   },
   "overrides": {
     "tar": "7.5.4",
